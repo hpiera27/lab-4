@@ -259,9 +259,26 @@ public class MongoGradeDataBase implements GradeDataBase {
         final Response response;
         final JSONObject responseBody;
 
+        try {
+            response = client.newCall(request).execute();
+            responseBody = new JSONObject(response.body().string());
+            if (responseBody.getInt(STATUS_CODE) == SUCCESS_CODE) {
+                final JSONObject team = responseBody.getJSONObject("team");
+                final JSONArray membersArray = team.getJSONArray("members");
+                final String[] members = new String[membersArray.length()];
+                final String name = team.getString(NAME);
+                return new Team(name, members);
+
+            }
+            else {
+                throw new RuntimeException(responseBody.getString(MESSAGE));
+
+            }
+        }
+        catch (IOException | JSONException event) {
+            throw new RuntimeException(event);
+        }
         // TODO Task 3b: Implement the logic to get the team information
         // HINT: Look at the formTeam method to get an idea on how to parse the response
-
-        return null;
     }
 }
